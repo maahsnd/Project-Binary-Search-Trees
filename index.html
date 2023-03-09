@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+
+class Tree {
+    constructor( array ) {
+        this.array = array;
+        this.root = buildTree(array); 
+    }
+}
+
+class Node {
+  constructor(left = null, right = null, value = null) { 
+    this.left = left;
+    this.right = right;
+    this.value = value;
+   }
+}
+
+function buildTree(array) {
+  if (!array.length) return null;
+  let mid = Math.ceil((array.length - 1) / 2); 
+  let root = new Node(null, null, array[mid]);
+
+  if (array.length > 1) {
+    root.left = buildTree(array.slice(0, mid));
+    root.right = buildTree(array.slice(mid+1));
+  };
+  return root;
+}
+
+function deleteNode(root, value) {
+  if (root === null) return root;
+  if (value < root.value) {
+    root.left = deleteNode(root.left, value);
+  }
+  if (value > root.value) {
+    root.right = deleteNode(root.right, value);
+  }
+  if (root.value === value){
+    if (root.left === null && root.right === null) {
+      return null;}
+    if (root.right === null) {
+      return root.left;
+    }
+    if (root.left === null) {
+      return root.right;
+    }
+    if (root.left && root.right) {
+      let n = root;
+      let r = root.right;
+      n.value = r.value;
+      root.right = null;
+      return root;
+    }
+  } 
+  return root;
+}
+
+
+function levelOrder(root, func = null ) {
+  let node;
+  let queue = [];
+  let valArr = [];
+  queue.push(root);
+  while (queue.length) {
+    node = queue.shift();
+    (func === null) ? valArr.push(node.value) : func(node)
+    if (node.left !== null){
+      queue.push(node.left);
+    }
+    if (node.right !== null){
+      queue.push(node.right);
+    }
+  }
+  if (func === null) return valArr;
+}
+
+function find(root, value) {
+  if (root === null) return false;
+  if (root.value === value) {
+    return root;
+  }
+  if (root.value < value) {
+    root = find(root.right, value);
+  }
+  if (root.value > value) {
+    root = find(root.left, value);
+  }
+  return root;
+}
+
+function inorder(root, func = []) {
+  if (root === null) return;
+  if (root.left !== null) {
+    inorder(root.left, func)
+  }
+  if (Array.isArray(func)) {func.push(root.value)}
+  if (root.right !== null){
+    inorder(root.right, func)
+  }
+  if (Array.isArray(func)) return func;
+}
+
+function preorder(root, func = []) {
+  if (root === null) return;
+  if (Array.isArray(func)) {func.push(root.value)}
+  if (root.left !== null) {
+    inorder(root.left, func)
+  }
+  if (root.right !== null){
+    inorder(root.right, func)
+  }
+  if (Array.isArray(func)) return func;
+}
+
+function postorder(root, func = []) {
+  if (root === null) return;
+  if (root.left !== null) {
+    inorder(root.left, func)
+  }
+  if (root.right !== null){
+    inorder(root.right, func)
+  }
+  if (Array.isArray(func)) {func.push(root.value)}
+  if (Array.isArray(func)) return func;
+}
+
+function insertNode(root, value) {
+  //guard to ensure that duplicate values are not added
+  if (find(root, value) !== false) {
+    alert('no duplicates allowed; exiting...');
+    return false;
+  }
+  if (root === null) {
+    root = new Node(null, null, value);
+    return root;
+  }
+  if (value < root.value) {
+    root.left = insertNode(root.left, value);
+  }
+  if (value > root.value) {
+    root.right = insertNode(root.right, value);
+  }
+  return root;
+}
+
+function depth(nodeVal, root) {
+  let count;
+  if (nodeVal === root.value) {
+    return 0;
+  }
+  if (nodeVal < root.value){
+    count = depth(nodeVal, root.left);
+  }
+  if (nodeVal > root.value) {
+    count = depth(nodeVal, root.right);
+  }
+  return count + 1;
+}
+
+function height(node) {
+  if (node === null) {
+    return 0;
+  }
+  if (node.right === null && node.left === null){
+    return 0;
+  }
+  let leftHeight = height(node.left);
+  let rightHeight = height(node.right);
+  return Math.max(leftHeight, rightHeight) + 1;
+}
+
+function isBalanced(root) {
+  let leftHeight = height(root.left);
+  let rightHeight = height(root.right);
+  let difference = Math.abs(leftHeight - rightHeight);
+  if (difference > 1) return false;
+  return true;
+}
+
+function rebalance(root) {
+  let rawArray = inorder(root);
+  let array = processArray(rawArray);
+  tree = buildTree(array);
+  return tree;
+}
+
+function removeDuplicates(array) {
+    let uniqueArray = [];
+    array.forEach(element => {
+        if (!uniqueArray.includes(element)) {
+            uniqueArray.push(element);
+        }
+    });
+    return uniqueArray;
+}
+
+function mergeHelper(left, right) {
+    let sortedArr = [];
+    while (left.length && right.length) {
+        if (left[0]  < right[0]) {
+            sortedArr.push(left.shift())
+        } else {
+            sortedArr.push(right.shift())
+        }
+    }
+    return [...sortedArr, ...left, ...right];
+}
+
+function mergeSort(array) {
+    if (array.length <= 1) return array;
+    let mid = Math.floor(array.length / 2);
+    let left = mergeSort(array.slice(0,mid));
+    let right = mergeSort(array.slice(mid));
+    return mergeHelper(left, right)
+}
+
+function processArray(array) {
+  let noDuplicates = removeDuplicates(array);
+  let merged = mergeSort(noDuplicates);
+  return merged;
+}
+
+const prettyPrint = (node, prefix = '', isLeft = true) => {
+  if (node.right !== null) {
+    prettyPrint(node.right, `${prefix}${isLeft ? '│   ' : '    '}`, false);
+  }
+  console.log(`${prefix}${isLeft ? '└── ' : '┌── '}${node.value}`);
+  if (node.left !== null) {
+    prettyPrint(node.left, `${prefix}${isLeft ? '    ' : '│   '}`, true);
+  }
+}
+
+function driver() {
+  let array = processArray([1, 10, 11, 8, 4, 2]);
+  let tree = new Tree(array);
+  console.log('balanced:  ', isBalanced(tree.root));
+  console.log('level:  ', levelOrder(tree.root));
+  console.log('pre:  ', preorder(tree.root));
+  console.log('post:  ', postorder(tree.root));
+  console.log('inorder:  ', inorder(tree.root));
+  insertNode(tree.root, 1000);
+  insertNode(tree.root, 1001);
+  insertNode(tree.root, 2003);
+  console.log('balanced:  ', isBalanced(tree.root));
+  tree.root = rebalance(tree.root);
+  console.log('balanced:  ', isBalanced(tree.root));
+  console.log('level:  ', levelOrder(tree.root));
+  console.log('pre:  ', preorder(tree.root));
+  console.log('post:  ', postorder(tree.root));
+  console.log('inorder:  ', inorder(tree.root));
+}
+
+driver();
+
+  </script>
+</body>
+</html>
